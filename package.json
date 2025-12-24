@@ -1,0 +1,35 @@
+{
+  "name": "google-meet-bot",
+  "version": "1.0.0",
+  "description": "A bot to join Google Meet, record audio, and transcribe it",
+  "main": "cli.js",
+  "bin": {
+    "meet-bot": "./cli.js"
+  },
+  "scripts": {
+    "start": "node cli.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "google-meet",
+    "automation",
+    "selenium",
+    "audio-recording",
+    "speech-to-text"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.1.0",
+    "dotenv": "^16.3.1",
+    "node-record-lpcm16": "^1.0.1",
+    "selenium-webdriver": "^4.16.0",
+    "wav": "^1.0.2"
+  },
+  "devDependencies": {
+    "chromedriver": "^120.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
