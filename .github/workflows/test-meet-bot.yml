@@ -1,0 +1,124 @@
+name: Test Google Meet Bot
+
+on:
+  workflow_dispatch:
+    inputs:
+      meet_link:
+        description: 'Google Meet Link'
+        required: true
+        type: string
+      duration:
+        description: 'Recording Duration (seconds)'
+        required: false
+        default: '30'
+        type: string
+      skip_analysis:
+        description: 'Skip transcription analysis'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  test-bot:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          sox \
+          libsox-fmt-all \
+          chromium-browser \
+          chromium-chromedriver \
+          xvfb \
+          pulseaudio \
+          alsa-utils
+        
+        sudo modprobe snd-aloop
+        pulseaudio --start --log-target=syslog || true
+        pactl load-module module-null-sink sink_name=virtual_speaker || true
+        pactl load-module module-virtual-source source_name=virtual_mic || true
+
+    - name: Install Node dependencies
+      run: npm ci
+
+    - name: Setup Chrome for Selenium
+      run: |
+        export CHROME_BIN=/usr/bin/chromium-browser
+        export CHROMEDRIVER_PATH=/usr/bin/chromedriver
+        chromium-browser --version
+        chromedriver --version
+
+    - name: Create .env file
+      run: |
+        cat > .env << EOF
+        EMAIL_ID=${{ secrets.EMAIL_ID }}
+        EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
+        MEET_LINK=${{ github.event.inputs.meet_link || secrets.MEET_LINK }}
+        RECORDING_DURATION=${{ github.event.inputs.duration || '30' }}
+        SAMPLE_RATE=44100
+        EOF
+
+    - name: Start Xvfb
+      run: |
+        Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+        echo "DISPLAY=:99" >> $GITHUB_ENV
+        sleep 3
+
+    - name: Run Meet Bot
+      timeout-minutes: 10
+      run: |
+        if [ "${{ github.event.inputs.skip_analysis }}" = "true" ]; then
+          node cli.js --no-analysis
+        else
+          node cli.js
+        fi
+      continue-on-error: true
+      id: run_bot
+
+    - name: Check if bot succeeded
+      run: |
+        if [ "${{ steps.run_bot.outcome }}" = "success" ]; then
+          echo "✅ Bot ran successfully!"
+        else
+          echo "❌ Bot encountered an error"
+          exit 1
+        fi
+
+    - name: Upload recordings
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: meeting-recordings-${{ github.run_number }}
+        path: /tmp/meet-*/output.wav
+        retention-days: 7
+        if-no-files-found: warn
+
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: bot-logs-${{ github.run_number }}
+        path: |
+          *.log
+          /tmp/*.log
+        retention-days: 3
+        if-no-files-found: ignore
+
+    - name: Cleanup
+      if: always()
+      run: |
+        pkill -f chrome || true
+        pkill -f chromium || true
+        pulseaudio --kill || true
+        rm -rf /tmp/meet-* || true
