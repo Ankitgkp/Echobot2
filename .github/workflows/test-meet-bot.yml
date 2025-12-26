@@ -44,7 +44,8 @@ jobs:
           pulseaudio \
           alsa-utils
         
-        sudo modprobe snd-aloop
+        # Try to load snd-aloop if available (not critical, PulseAudio handles audio)
+        sudo modprobe snd-aloop || echo "snd-aloop module not available, using PulseAudio virtual devices"
         pulseaudio --start --log-target=syslog || true
         pactl load-module module-null-sink sink_name=virtual_speaker || true
         pactl load-module module-virtual-source source_name=virtual_mic || true
