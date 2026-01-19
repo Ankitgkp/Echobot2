@@ -104,9 +104,7 @@ class JoinGoogleMeet {
             );
             await nameInput.clear();
             await nameInput.sendKeys(name);
-            console.log('Name entered successfully.');
         } catch (error) {
-            console.log('Name input field not found (expected if logged in).');
         }
     }
 
@@ -148,7 +146,6 @@ class JoinGoogleMeet {
                 await joinButton.click();
                 joinClicked = true;
             } catch (error) {
-                // Continue to fallback
             }
         }
 
@@ -172,7 +169,6 @@ class JoinGoogleMeet {
         }
 
         if (!joinClicked) {
-            console.log('Failed to click any join button!');
         }
 
         const recorder = new AudioRecorder();
