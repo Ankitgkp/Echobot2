@@ -51,10 +51,8 @@ class JoinGoogleMeet {
 
         try {
             await this.driver.findElement(By.css('a[aria-label*="Google Account"]'));
-            console.log('Already logged in to Google.');
             return;
         } catch (error) {
-            console.log('Not logged in. Proceeding with login.');
         }
 
         await this.driver.get('https://accounts.google.com/ServiceLogin?hl=en&passive=true&continue=https://www.google.com/&ec=GAZAAQ');
@@ -70,7 +68,6 @@ class JoinGoogleMeet {
 
         await this.driver.get('https://google.com/');
         await this.sleep(3000);
-        console.log('Gmail login activity: Done');
     }
 
     async turnOffMicCam(meetLink) {
@@ -83,9 +80,7 @@ class JoinGoogleMeet {
                 10000
             );
             await micButton.click();
-            console.log('Turn off mic activity: Done');
         } catch (error) {
-            console.log('Could not find mic button, it may already be off or the page layout has changed.');
         }
 
         await this.sleep(1000);
