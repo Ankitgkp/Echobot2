@@ -91,7 +91,6 @@ class JoinGoogleMeet {
                 10000
             );
             await camButton.click();
-            console.log('Turn off camera activity: Done');
         } catch (error) {
             console.log('Could not find camera button, it may already be off or the page layout has changed.');
         }
@@ -124,10 +123,8 @@ class JoinGoogleMeet {
                 5000
             );
             await joinNowButton.click();
-            console.log('Join now activity: Done');
             joinClicked = true;
         } catch (error) {
-            console.log('Join now button not found, trying Ask to join...');
         }
 
         if (!joinClicked) {
@@ -137,10 +134,8 @@ class JoinGoogleMeet {
                     5000
                 );
                 await askToJoinButton.click();
-                console.log('Ask to join activity: Done');
                 joinClicked = true;
             } catch (error) {
-                console.log('Ask to join button not found, trying CSS selectors...');
             }
         }
 
@@ -151,7 +146,6 @@ class JoinGoogleMeet {
                     5000
                 );
                 await joinButton.click();
-                console.log('Join activity: Done (CSS selector)');
                 joinClicked = true;
             } catch (error) {
                 // Continue to fallback
@@ -166,7 +160,6 @@ class JoinGoogleMeet {
                         const buttonText = (await button.getText()).toLowerCase();
                         if (buttonText.includes('join now') || buttonText.includes('ask to join') || buttonText === 'join') {
                             await button.click();
-                            console.log('Join activity: Done (text fallback)');
                             joinClicked = true;
                             break;
                         }
@@ -175,7 +168,6 @@ class JoinGoogleMeet {
                     }
                 }
             } catch (error) {
-                console.log(`Could not find join button: ${error.message}`);
             }
         }
 
